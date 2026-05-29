@@ -1,0 +1,22 @@
+Package: BayesBoots
+Title: Bayesian Bootstrap (BB) Induced Survival Models
+Version: 1.0.1
+Date: 2026-06-01
+Authors@R: 
+    c(person(given = "K. Shuvo",
+             family = "Bakar",
+             role = c("aut", "cre"),
+             email = "shuvo.bakar@gmail.com",
+             comment = c(ORCID = "0000-0003-3215-4496")),
+      person(given = "Armando",
+             family = "Teixeira-Pinto",
+             role = "ctb",
+             comment = c(ORCID = "0000-0002-9389-2516"))
+			 )
+Depends: R (>= 4.5)
+Description: The package supports (1) BB-KM (Bayesian Bootstrap Kaplan-Meier), (2) BB-Cox (Bayesian Bootstrap Cox Model), (3) BB-GLM (Bayesian Bootstrap Generalised Linear Model: currently only available for binary outcome, i.e., Logistic Model).
+License: GPL (>= 2)
+Imports: survival, ggplot2, dplyr, tibble, purrr, tidyr
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
