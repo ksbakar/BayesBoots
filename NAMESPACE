@@ -16,5 +16,18 @@ export(
        "runBB",
 	   "print.BayesBoots",
 	   "summary.BayesBoots",
-	   "plot.BayesBoots"
+	   "plot.BayesBoots",
+	   "prior_ridge",
+	   "prior_lasso",
+	   "prior_elastic",
+	   "prior_normal",
+	   "prior_mvn",
+	   "prior_student",
+	   "prior_cauchy",
+	   "prior_horseshoe",
+	   "prior_spike_slab",
+	   "prior_smoothness",
+	   "prior_roughness",
+	   "prior_hazard_stability",
+	   "prior_early_failure"
 	   )
