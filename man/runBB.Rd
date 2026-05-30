@@ -73,16 +73,12 @@ Additional arguments passed to model-specific fitting functions.
 
 A list object of class \code{BayesBoots} containing model-specific output.
 
-\item{curves / beta_samples}{
+\item{summary}{
+Posterior summary generated from Bayesian bootstrap draws (structure depends on model).
+}
+
+\item{curves_data / beta_samples / hr_samples / or_samples}{
 Posterior samples generated from Bayesian bootstrap draws (structure depends on model).
-}
-
-\item{weights}{
-Gibbs posterior weights assigned to each bootstrap draw.
-}
-
-\item{median, lower, upper}{
-Posterior summary estimates (model-dependent structure).
 }
 
 \item{diagnostics}{
@@ -91,6 +87,7 @@ A data frame containing:
   \item empirical risk values
   \item prior penalty values (\code{omega})
   \item Gibbs weights
+  \item ... (depends on model)
 }
 }
 

@@ -86,7 +86,6 @@ run_bb_glm <- function(
       beta_summary = beta_summary,
       or_summary = or_summary,
       summary = results,
-      weights = w,
       diagnostics = tibble::tibble(
         draw = seq_len(nrow(beta_mat)),
         risk = gibbs_obj$risk,
