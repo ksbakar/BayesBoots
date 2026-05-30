@@ -124,6 +124,10 @@ Rubin, D. B. (1981). The Bayesian bootstrap. \emph{Annals of Statistics}.
 (Extended Gibbs posterior learning framework applied in modern likelihood-free inference literature.)
 }
 
+\seealso{
+\code{\link{priorBB}}
+}
+
 \examples{
 \dontrun{
 

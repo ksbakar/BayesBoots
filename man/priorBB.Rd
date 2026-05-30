@@ -123,5 +123,5 @@ prior_early_failure(curve)
 }
 
 \seealso{
-\code{\link{prior_ridge}}, \code{\link{prior_lasso}}, \code{\link{prior_normal}}
+\code{\link{runBB}}
 }
