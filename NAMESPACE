@@ -12,3 +12,9 @@ importFrom("stats", "median", "quantile", "rnorm", "rgamma", "rexp",
            "time", "var", "as.formula", "model.frame", "model.matrix")
 
 
+export(
+       "runBB",
+	   "print.BayesBoots",
+	   "summary.BayesBoots",
+	   "plot.BayesBoots"
+	   )
