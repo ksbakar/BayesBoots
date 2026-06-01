@@ -61,6 +61,7 @@ Larger values place more emphasis on low-risk draws.
 \item{prior_fn}{
 A user-defined prior function applied to each draw in the Gibbs posterior.
 Common choices include ridge, lasso, or smoothness priors.
+See details in \link{priorBB}.
 }
 
 \item{...}{
@@ -113,6 +114,7 @@ where \eqn{R(S_m)} is an empirical risk function and \eqn{\Omega(S_m)} is a user
 
 This framework allows likelihood-free inference and is applicable across survival,
 regression, and generalized linear models.
+
 }
 
 \references{
@@ -122,10 +124,6 @@ Wasserman, L. & Bhattacharya, A. (2014). \emph{Statistical decision theory and B
 Rubin, D. B. (1981). The Bayesian bootstrap. \emph{Annals of Statistics}.
 
 (Extended Gibbs posterior learning framework applied in modern likelihood-free inference literature.)
-}
-
-\seealso{
-\code{\link{priorBB}}
 }
 
 \examples{
@@ -210,4 +208,9 @@ plot(fit_glm, type="density")
 ######################################################
 
 }
+}
+
+
+\seealso{
+\code{\link{priorBB}}
 }

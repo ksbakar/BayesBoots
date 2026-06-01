@@ -1,6 +1,12 @@
 ########################################################
-## bb_priors.R
+## priorBB.R
 ########################################################
+
+## prior generic fn
+
+priorBB <- function(prior_fn){
+  prior_fn
+}
 
 ## ridge prior
 
