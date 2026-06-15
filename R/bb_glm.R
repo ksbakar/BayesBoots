@@ -26,7 +26,7 @@ run_bb_glm <- function(
     formula,
     family = gaussian(),
     M = 400,
-    lambda = 1,
+    lambda = NULL,
     omega_fn = omega_ridge
 ) {
   raw_draws <- generate_bb_draws(
@@ -39,6 +39,9 @@ run_bb_glm <- function(
   beta_mat <- do.call(rbind, raw_draws)
   beta_mat <- as.matrix(beta_mat)
   or_mat <- exp(beta_mat)
+  if (is.null(lambda)) {
+    lambda <- 1 / sqrt(M)
+  }
   gibbs_obj <- compute_gibbs_weights(
     draws = split(beta_mat, row(beta_mat)),
     omega_fn = omega_fn,

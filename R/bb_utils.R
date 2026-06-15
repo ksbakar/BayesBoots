@@ -201,7 +201,7 @@ print.BayesBoots <- function(x, ...) {
 
 summary.BayesBoots <- function(object, ..., digits = 4) {
 
-  class_type <- class(object)[1]
+  class_type <- intersect(c("BB-GLM", "BB-Cox", "BB-KM"), class(object))[1]
   cat("\n############################################\n")
   cat(" Bayesian Bootstrap Induced Survival Models \n")
   cat("############################################\n\n")
@@ -247,7 +247,21 @@ plot.BayesBoots <- function(object,
                             type = NULL,
                             ...) {
   # type can take: "hr", "or", "density", "baseline"
-  class_type <- class(object)[1]
+  class_type <- intersect(c("BB-GLM", "BB-Cox", "BB-KM"), class(object))[1]
+  extract_time_var <- function(formula) {
+    # survival::Surv(time, status) ~ x
+    lhs <- as.character(formula)[2]
+    if (grepl("Surv", lhs)) {
+      # extract inside Surv(...)
+      inside <- sub("Surv\\((.*)\\)", "\\1", lhs)
+      # split time, status
+      parts <- strsplit(inside, ",")[[1]]
+      time_var <- trimws(parts[1])
+      return(time_var)
+    }
+    stop("No Surv() structure found in formula; cannot infer time variable")
+  }
+  #
   plot_forest <- function(df, est, lower, upper, main) {
     if (!requireNamespace("ggplot2", quietly = TRUE)) {
       stop("ggplot2 required for plotting")
@@ -259,7 +273,7 @@ plot.BayesBoots <- function(object,
       ggplot2::geom_errorbarh(
         ggplot2::aes(xmin = .data[[lower]],
                      xmax = .data[[upper]]),
-        height = 0.2
+        width = 0.2
       ) +
       ggplot2::geom_vline(xintercept = 1, linetype = 2) +
       ggplot2::labs(title = main, x = "", y = "") +

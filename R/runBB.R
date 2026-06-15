@@ -55,7 +55,7 @@ runBB <- function(
     }
   )
   out <- dispatch[[model]]()
-  class(out) <- c(model, class(out))
+  class(out) <- c(class(out), model)
   out
 }
 

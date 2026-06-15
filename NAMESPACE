@@ -11,6 +11,9 @@ importFrom("stats", "median", "quantile", "rnorm", "rgamma", "rexp",
            "dnorm", "sd", "glm", "gaussian", "approx", "reorder",
            "time", "var", "as.formula", "model.frame", "model.matrix")
 
+S3method(summary, BayesBoots)
+S3method(print, BayesBoots)
+S3method(plot, BayesBoots)
 
 export(
        "runBB",

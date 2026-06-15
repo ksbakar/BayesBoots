@@ -62,7 +62,7 @@ run_bb_km <- function(
     data,
     formula = survival::Surv(time, status) ~ 1,
     M = 400,
-    lambda = 1,
+    lambda = NULL,
     omega_fn = prior_smoothness
 ) {
   curves <- generate_bb_draws(
@@ -78,6 +78,9 @@ run_bb_km <- function(
   M_eff <- length(curves)
   if(M_eff == 0) {
     stop("All KM bootstrap draws failed")
+  }
+  if (is.null(lambda)) {
+    lambda <- 1 / sqrt(M)
   }
   gibbs <- compute_gibbs_weights(
     draws = curves,

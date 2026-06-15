@@ -20,7 +20,7 @@ runBB(
   formula = NULL,
   family = gaussian(),
   M = 400,
-  lambda = 1,
+  lambda = NULL,
   prior_fn = NULL,
   ...
 )
@@ -54,8 +54,7 @@ Number of Bayesian bootstrap draws to generate.
 }
 
 \item{lambda}{
-Gibbs posterior temperature parameter controlling the influence of empirical risk.
-Larger values place more emphasis on low-risk draws.
+Gibbs posterior temperature parameter controlling the influence of empirical risk. If NULL then will use 1/sqrt(M).
 }
 
 \item{prior_fn}{
