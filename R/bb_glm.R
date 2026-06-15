@@ -95,6 +95,7 @@ run_bb_glm <- function(
         omega = gibbs_obj$omega,
         weight = w
       ),
+      lambda = lambda,
       prior_fn = omega_fn,
       formula = formula
     ),

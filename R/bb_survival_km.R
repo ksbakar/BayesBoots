@@ -197,6 +197,7 @@ run_bb_km <- function(
         omega = gibbs$omega,
         weight = w
       ),
+      lambda = lambda,
       prior_fn = omega_fn,
       formula = formula
     ),
