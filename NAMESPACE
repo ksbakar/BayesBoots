@@ -14,12 +14,16 @@ importFrom("stats", "median", "quantile", "rnorm", "rgamma", "rexp",
 S3method(summary, BayesBoots)
 S3method(print, BayesBoots)
 S3method(plot, BayesBoots)
+S3method(predict, BayesBoots)
+S3method(plot, predBB)
 
 export(
        "runBB",
 	   "print.BayesBoots",
 	   "summary.BayesBoots",
+	   "predict.BayesBoots",
 	   "plot.BayesBoots",
+	   "plot.predBB",
 	   "prior_ridge",
 	   "prior_lasso",
 	   "prior_elastic",

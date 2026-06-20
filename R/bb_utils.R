@@ -245,8 +245,9 @@ extract_time_var <- function(formula) {
 
 plot.BayesBoots <- function(object,
                             type = NULL,
+                            group_var = NULL,
                             ...) {
-  # type can take: "hr", "or", "density", "baseline"
+  # type can take: "hr", "or", "density", "baseline", "surv"
   class_type <- intersect(c("BB-GLM", "BB-Cox", "BB-KM"), class(object))[1]
   extract_time_var <- function(formula) {
     # survival::Surv(time, status) ~ x
@@ -342,6 +343,76 @@ plot.BayesBoots <- function(object,
           object$baseline_survival,
           main = "BB-Cox Baseline Survival"
         ),
+        "surv" = {
+          if (!requireNamespace("ggplot2", quietly = TRUE)) {
+            stop("ggplot2 required")
+          }
+          if (is.null(group_var)) {
+            stop("Please supply group_var (e.g. 'sex', 'treatment')")
+          }
+          df <- fit_cox$data
+          if (!group_var %in% names(df)) {
+            stop("group_var not found in fitted data")
+          }
+          X <- model.matrix(fit_cox$formula, data = df)
+          if ("(Intercept)" %in% colnames(X)) {
+            X <- X[, colnames(X) != "(Intercept)", drop = FALSE]
+          }
+          beta <- as.matrix(fit_cox$beta_samples)
+          common <- intersect(colnames(X), colnames(beta))
+          if (length(common) == 0) {
+            stop("No matching columns between X and beta_samples")
+          }
+          X <- X[, common, drop = FALSE]
+          beta <- beta[, common, drop = FALSE]
+          S0 <- fit_cox$baseline_survival_draws
+          time <- fit_cox$time
+          # ensure S0 is: draws × time
+          if (ncol(S0) != length(time) && nrow(S0) == length(time)) {
+            S0 <- t(S0)
+          }
+          groups <- unique(df[[group_var]])
+          plot_list <- list()
+          for (g in groups) {
+            idx <- which(df[[group_var]] == g)
+            xg <- colMeans(X[idx, , drop = FALSE])
+            xg <- xg[colnames(beta)]  # strict alignment
+            eta <- as.numeric(beta %*% xg)   # length = draws
+            rr <- exp(eta)
+            n_time <- length(time)
+            n_draws <- length(rr)
+            S_g <- matrix(NA, nrow = n_time, ncol = n_draws)
+            for (d in seq_len(n_draws)) {
+              S_g[, d] <- S0[d, ] ^ rr[d]
+            }
+            median <- apply(S_g, 1, median)
+            lower  <- apply(S_g, 1, quantile, 0.025)
+            upper  <- apply(S_g, 1, quantile, 0.975)
+            plot_list[[as.character(g)]] <- data.frame(
+              time = time,
+              median = median,
+              lower = lower,
+              upper = upper,
+              group = as.character(g)
+            )
+          }
+          plot_df <- do.call(rbind, plot_list)
+          ggplot2::ggplot(plot_df,
+                          ggplot2::aes(x = time, y = median,
+                                       colour = group, fill = group)) +
+            ggplot2::geom_line(linewidth = 1) +
+            ggplot2::geom_ribbon(
+              ggplot2::aes(ymin = lower, ymax = upper),
+              alpha = 0.2,
+              colour = NA
+            ) +
+            ggplot2::labs(
+              title = paste("BB-Cox Adjusted Survival by", group_var),
+              x = "Time",
+              y = "Survival"
+            ) +
+            ggplot2::theme_minimal()
+        },
         "density" = {
           if (!requireNamespace("ggplot2", quietly = TRUE)) {
             stop("ggplot2 required")

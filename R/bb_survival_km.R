@@ -199,6 +199,7 @@ run_bb_km <- function(
       ),
       lambda = lambda,
       prior_fn = omega_fn,
+      data = data,
       formula = formula
     ),
     class = "BayesBoots"

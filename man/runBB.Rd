@@ -171,6 +171,8 @@ fit_cox
 summary(fit_cox)
 plot(fit_cox)
 plot(fit_cox, type="hr")
+plot(fit_cox, type = "surv", group_var = "sex")
+plot(fit_cox, type="surv", group_var = "ph.ecog")
 plot(fit_cox, type="density")
 plot(fit_cox, type="baseline")
 
@@ -211,5 +213,6 @@ plot(fit_glm, type="density")
 
 
 \seealso{
-\code{\link{priorBB}}
+\code{\link{priorBB}},
+\code{\link{predict}}
 }
