@@ -9,13 +9,11 @@ fit_glm_bb <- function(
     formula,
     family = gaussian()
 ) {
-
   fit <- glm(
     formula,
     data = data,
     family = family
   )
-
   stats::coef(fit)
 }
 

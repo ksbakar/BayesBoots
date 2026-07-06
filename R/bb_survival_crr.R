@@ -1,35 +1,37 @@
 ########################################################
-## bb_survival_cox.R
+## bb_survival_crr.R
 ########################################################
 
-## Ordinary Cox fit on BB resample
+## Subdistribution Analysis of Competing Risks on BB resample
+## Fine JP and Gray RJ (1999) using cmprsk
 
-fit_cox_bb <- function(
+fit_crr_bb <- function(
     data,
     formula,
     ...
 ) {
-  fit <- survival::coxph(
-    formula,
-    data = data,
-    ties = "breslow",
-    x = TRUE,
-    model = TRUE,
+  ##
+  var_list <- all.vars(formula)
+  data <- data[complete.cases(data),]
+  time <- data[,var_list[1]]
+  status <- data[,var_list[2]]
+  f <- as.formula(paste(paste(var_list[1])," ~ ", paste(var_list[-c(1,2)], collapse= "+")))
+  X <- model.matrix(f, data = data)[, -1, drop = FALSE]
+  fit <- cmprsk::crr(
+    ftime = time,
+    fstatus = status,
+    cov1 = X,
     ...
   )
-  bh <- survival::basehaz(
-    fit,
-    centered = FALSE
-  )
   list(
-    coef = stats::coef(fit),
-    basehaz = bh
+    coef = fit$coef,
+    time = time
   )
 }
 
 ## Run BB-Cox Gibbs posterior
 
-run_bb_cox <- function(
+run_bb_crr <- function(
     data,
     formula,
     M = 400,
@@ -38,7 +40,7 @@ run_bb_cox <- function(
     ...
 ) {
   raw_draws <- generate_bb_draws(
-    fit_fn = fit_cox_bb,
+    fit_fn = fit_crr_bb,
     data = data,
     M = M,
     formula = formula,
@@ -50,7 +52,7 @@ run_bb_cox <- function(
   )
   M_eff <- length(raw_draws)
   if(M_eff == 0) {
-    stop("All BB-Cox draws failed")
+    stop("All BB-CRR draws failed")
   }
   beta_mat <- do.call(
     rbind,
@@ -91,37 +93,10 @@ run_bb_cox <- function(
     unlist(
       lapply(
         raw_draws,
-        function(x) x$basehaz$time
+        function(x) x$time
       )
     )
   ))
-  S0_mat <- matrix(
-    NA_real_,
-    nrow = length(times),
-    ncol = M_eff
-  )
-  for(m in seq_len(M_eff)) {
-    bh <- raw_draws[[m]]$basehaz
-    H0 <- approx(
-      x = bh$time,
-      y = bh$hazard,
-      xout = times,
-      method = "constant",
-      rule = 2,
-      f = 0
-    )$y
-    S0_mat[, m] <- exp(-H0)
-  }
-  S0_summary <- weighted_summary_km(
-    S0_mat,
-    w
-  )
-  baseline_survival <- tibble::tibble(
-    time = times,
-    median = S0_summary$median,
-    lower = S0_summary$lower,
-    upper = S0_summary$upper
-  )
   results <- dplyr::left_join(
     beta_summary |>
       dplyr::transmute(
@@ -143,8 +118,6 @@ run_bb_cox <- function(
       beta_summary = beta_summary,
       hr_summary = hr_summary,
       summary = results,
-      baseline_survival_draws = S0_mat,
-      baseline_survival = baseline_survival,
       time = times,
       diagnostics = tibble::tibble(
         draw = seq_len(M_eff),

@@ -4,7 +4,7 @@
 
 runBB <- function(
     data,
-    model = c("BB-KM", "BB-Cox", "BB-GLM"),
+    model = c("BB-KM", "BB-Cox", "BB-GLM", "BB-CRR"),
     formula = NULL,
     family = gaussian(),
     M = 400,
@@ -33,6 +33,18 @@ runBB <- function(
         stop("BB-Cox requires a formula, e.g. Surv(time,status) ~ x1 + x2")
       }
       run_bb_cox(
+        data = data,
+        formula = formula,
+        M = M,
+        lambda = lambda,
+        omega_fn = prior_fn
+      )
+    },
+    "BB-CRR" = function() {
+      if(is.null(formula)) {
+        stop("BB-Cox requires a formula, e.g. Surv(time,status) ~ x1 + x2")
+      }
+      run_bb_crr(
         data = data,
         formula = formula,
         M = M,

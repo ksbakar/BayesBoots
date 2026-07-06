@@ -149,7 +149,7 @@ fit_cox <- runBB(
 
 pred_cox <- predict(
   fit_cox,
-  newdata = lung[1:5, ]
+  newdata = lung[1:10, ] #lung
 )
 
 plot(pred_cox, ids = 1:5)

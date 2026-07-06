@@ -5,7 +5,7 @@
 
 predict.BayesBoots <- function(object, newdata, times = NULL, ...) {
 
-  class_type <- intersect(c("BB-GLM", "BB-Cox", "BB-KM"), class(object))[1]
+  class_type <- intersect(c("BB-GLM", "BB-Cox", "BB-CRR", "BB-KM"), class(object))[1]
   switch(
     class_type,
     "BB-Cox" = {

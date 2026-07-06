@@ -201,7 +201,7 @@ print.BayesBoots <- function(x, ...) {
 
 summary.BayesBoots <- function(object, ..., digits = 4) {
 
-  class_type <- intersect(c("BB-GLM", "BB-Cox", "BB-KM"), class(object))[1]
+  class_type <- intersect(c("BB-GLM", "BB-Cox", "BB-CRR", "BB-KM"), class(object))[1]
   cat("\n############################################\n")
   cat(" Bayesian Bootstrap Induced Survival Models \n")
   cat("############################################\n\n")
@@ -215,6 +215,10 @@ summary.BayesBoots <- function(object, ..., digits = 4) {
       print(data.frame(object$summary), digits = digits)
     },
     "BB-Cox" = {
+      cat("\n BB Posterior estimates:\n")
+      print(data.frame(object$summary), digits = digits)
+    },
+    "BB-CRR" = {
       cat("\n BB Posterior estimates:\n")
       print(data.frame(object$summary), digits = digits)
     },
@@ -248,7 +252,7 @@ plot.BayesBoots <- function(object,
                             group_var = NULL,
                             ...) {
   # type can take: "hr", "or", "density", "baseline", "surv"
-  class_type <- intersect(c("BB-GLM", "BB-Cox", "BB-KM"), class(object))[1]
+  class_type <- intersect(c("BB-GLM", "BB-Cox", "BB-CRR", "BB-KM"), class(object))[1]
   extract_time_var <- function(formula) {
     # survival::Surv(time, status) ~ x
     lhs <- as.character(formula)[2]
@@ -350,23 +354,23 @@ plot.BayesBoots <- function(object,
           if (is.null(group_var)) {
             stop("Please supply group_var (e.g. 'sex', 'treatment')")
           }
-          df <- fit_cox$data
+          df <- object$data
           if (!group_var %in% names(df)) {
             stop("group_var not found in fitted data")
           }
-          X <- model.matrix(fit_cox$formula, data = df)
+          X <- model.matrix(object$formula, data = df)
           if ("(Intercept)" %in% colnames(X)) {
             X <- X[, colnames(X) != "(Intercept)", drop = FALSE]
           }
-          beta <- as.matrix(fit_cox$beta_samples)
+          beta <- as.matrix(object$beta_samples)
           common <- intersect(colnames(X), colnames(beta))
           if (length(common) == 0) {
             stop("No matching columns between X and beta_samples")
           }
           X <- X[, common, drop = FALSE]
           beta <- beta[, common, drop = FALSE]
-          S0 <- fit_cox$baseline_survival_draws
-          time <- fit_cox$time
+          S0 <- object$baseline_survival_draws
+          time <- object$time
           # ensure S0 is: draws × time
           if (ncol(S0) != length(time) && nrow(S0) == length(time)) {
             S0 <- t(S0)
@@ -431,6 +435,37 @@ plot.BayesBoots <- function(object,
             ggplot2::theme_minimal()
         },
         stop("Unknown type for BB-Cox: ", type)
+      )
+    },
+    "BB-CRR" = {
+      if (is.null(type)) type <- "hr"
+      switch(
+        type,
+        "hr" = plot_forest(
+          object$hr_summary,
+          est = "hr",
+          lower = "hr_lower",
+          upper = "hr_upper",
+          main = "BB-CRR Hazard Ratios"
+        ),
+        "density" = {
+          if (!requireNamespace("ggplot2", quietly = TRUE)) {
+            stop("ggplot2 required")
+          }
+          df <- as.data.frame(object$hr_samples)
+          df_long <- tidyr::pivot_longer(
+            df,
+            cols = everything(),
+            names_to = "term",
+            values_to = "value"
+          )
+          ggplot2::ggplot(df_long, ggplot2::aes(x = value)) +
+            ggplot2::geom_density() +
+            ggplot2::facet_wrap(~ term, scales = "free") +
+            ggplot2::labs(title = "BB-CRR HR Posterior Densities") +
+            ggplot2::theme_minimal()
+        },
+        stop("Unknown type for BB-CRR: ", type)
       )
     },
     "BB-GLM" = {

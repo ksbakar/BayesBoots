@@ -14,9 +14,9 @@ Authors@R:
              comment = c(ORCID = "0000-0002-9389-2516"))
 			 )
 Depends: R (>= 4.5)
-Description: The package supports (1) BB-KM (Bayesian Bootstrap Kaplan-Meier), (2) BB-Cox (Bayesian Bootstrap Cox Model), (3) BB-GLM (Bayesian Bootstrap Generalised Linear Model: currently only available for binary outcome, i.e., Logistic Model).
+Description: The package supports (1) BB-Cox (Bayesian Bootstrap Cox Model), (2) BB-CRR (Bayesian Bootstrap Competing Risks Regression), (3) BB-KM (Bayesian Bootstrap Kaplan-Meier), (4) BB-GLM (Bayesian Bootstrap Generalised Linear Model: currently only available for binary outcome, i.e., Logistic Model).
 License: GPL (>= 2)
-Imports: survival, ggplot2, dplyr, tibble, purrr, tidyr
+Imports: survival, cmprsk, ggplot2, dplyr, tibble, purrr, tidyr
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
