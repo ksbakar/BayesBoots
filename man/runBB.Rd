@@ -6,7 +6,8 @@
 \description{
 This function provides an interface for Bayesian Bootstrap (BB) and Gibbs posterior
 inference across multiple model classes, including Kaplan-Meier survival curves (BB-KM),
-Cox proportional hazards models (BB-Cox), and generalized linear models (BB-GLM).
+Cox proportional hazards models (BB-Cox), Fine-Gray i.e., competing risk regression (BB-CRR)
+and generalized linear models (BB-GLM).
 
 The function generates Bayesian bootstrap posterior draws using Dirichlet weights and
 optionally refines them using a Gibbs posterior weighting scheme based on empirical risk
@@ -16,7 +17,7 @@ and user-specified prior penalty functions.
 \usage{
 runBB(
   data,
-  model = c("BB-KM", "BB-Cox", "BB-GLM"),
+  model = c("BB-KM", "BB-Cox", "BB-CRR","BB-GLM"),
   formula = NULL,
   family = gaussian(),
   M = 400,
@@ -31,12 +32,12 @@ runBB(
 \item{data}{
 A data frame containing the variables required for the chosen model.
 For BB-KM, must include \code{time} and \code{status}.
-For BB-Cox and BB-GLM, must include variables referenced in \code{formula}.
+For BB-Cox, BB-CRR and BB-GLM, must include variables referenced in \code{formula}.
 }
 
 \item{model}{
 A character string specifying the model type. Options include:
-\code{"BB-KM"}, \code{"BB-Cox"}, and \code{"BB-GLM"}.
+\code{"BB-KM"}, \code{"BB-Cox"}, \code{"BB-CRR"}, and \code{"BB-GLM"}.
 }
 
 \item{formula}{
@@ -65,6 +66,7 @@ See details in \link{priorBB}.
 
 \item{...}{
 Additional arguments passed to model-specific fitting functions.
+See details in \link{Surv}, \link{coxph}, \link{crr}, \link{glm}.
 }
 
 }
@@ -129,11 +131,13 @@ Rubin, D. B. (1981). The Bayesian bootstrap. \emph{Annals of Statistics}.
 \dontrun{
 
 ######################################################
-## Load survival package datasets
+## Load datasets
 ######################################################
 
 library(survival)
 head(lung)
+ibrary(MASS)
+data(Melanoma)
 
 ######################################################
 ## BB-KM Example (lung cancer survival)
@@ -176,9 +180,44 @@ plot(fit_cox, type="surv", group_var = "ph.ecog")
 plot(fit_cox, type="density")
 plot(fit_cox, type="baseline")
 
+######################################################
+## BB-CCR Example (Melanoma dataset)
+######################################################
+
+library(MASS)
+data(Melanoma)
+
+# Quick look at the event distribution
+table(Melanoma$status)
+# 1 = Died from melanoma (event of interest),
+# 2 = Still alive (censored),
+# 3 = Died other causes (competing risk)
+
+# for 'status' input the BB-CRR argument requires
+# 0 = censored observations
+# 1, 2, ... = competing event causes
+
+dat_crr <- Melanoma
+dat_crr$status_crr <- ifelse(dat_crr$status == 1, 1,
+                          ifelse(dat_crr$status == 3, 2, 0))
+table(dat_crr$status)
+table(dat_crr$status_crr)
+
+fit_crr <- runBB(
+  data = dat_crr,
+  model = "BB-CRR",
+  formula = survival::Surv(time, status) ~ age + sex + thickness + ulcer,
+  failcode = 1, # default is 1, here the event of interest
+  prior_fn = prior_ridge,
+  M = 300
+)
+
+fit_crr
+summary(fit_crr)
+plot(fit_crr)
 
 ######################################################
-## BB-GLM Example (Primary Biliary Cirrhosis - PBC)
+## BB-GLM Example (lung cancer data)
 ######################################################
 
 ## we convert the survival data for logistic model
