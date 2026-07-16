@@ -17,7 +17,7 @@ and user-specified prior penalty functions.
 \usage{
 runBB(
   data,
-  model = c("BB-KM", "BB-Cox", "BB-CRR","BB-GLM"),
+  model = c("BB-KM", "BB-Cox", "BB-CRR", "BB-GLM"),
   formula = NULL,
   family = gaussian(),
   M = 400,
@@ -41,8 +41,8 @@ A character string specifying the model type. Options include:
 }
 
 \item{formula}{
-An object of class \code{formula}. Required for BB-Cox and BB-GLM models.
-For BB-Cox, typically of the form \code{Surv(time, status) ~ x1 + x2}.
+An object of class \code{formula}. Required for BB-Cox, BB-CRR and BB-GLM models.
+For BB-Cox and BB-CRR, typically of the form \code{Surv(time, status) ~ x1 + x2}.
 }
 
 \item{family}{
@@ -55,7 +55,7 @@ Number of Bayesian bootstrap draws to generate.
 }
 
 \item{lambda}{
-Gibbs posterior temperature parameter controlling the influence of empirical risk. If NULL then will use 1/sqrt(M).
+Gibbs posterior temperature parameter controlling the influence of empirical risk. If NULL then will use \eqn{c/M^{\alpha}}, where \eqn{c=1} and \eqn{\alpha=0.5}.
 }
 
 \item{prior_fn}{
@@ -66,7 +66,7 @@ See details in \link{priorBB}.
 
 \item{...}{
 Additional arguments passed to model-specific fitting functions.
-See details in \link{Surv}, \link{coxph}, \link{crr}, \link{glm}.
+See details in \link{Surv}, \link{coxph}, \link{crr}, and \link{glm}.
 }
 
 }
@@ -136,7 +136,7 @@ Rubin, D. B. (1981). The Bayesian bootstrap. \emph{Annals of Statistics}.
 
 library(survival)
 head(lung)
-ibrary(MASS)
+library(MASS)
 data(Melanoma)
 
 ######################################################
@@ -149,8 +149,7 @@ fit_km <- runBB(
   data = km_data,
   model = "BB-KM",
   formula = survival::Surv(time, status) ~ ph.ecog,
-  prior_fn = prior_smoothness,
-  M = 300
+  prior_fn = prior_smoothness
 )
 
 fit_km
@@ -163,13 +162,14 @@ plot(fit_km)
 
 cox_data <- na.omit(lung)
 
+system.time({
 fit_cox <- runBB(
   data = cox_data,
   model = "BB-Cox",
-  formula = survival::Surv(time, status) ~ age + sex + ph.ecog + wt.loss,
-  prior_fn = prior_ridge,
-  M = 300
-)
+  formula = survival::Surv(time, status) ~ age + sex +
+                      ph.ecog + ph.karno_status + wt.loss,
+  prior_fn = prior_normal
+)}) # < 1 sec
 
 fit_cox
 summary(fit_cox)
@@ -179,6 +179,23 @@ plot(fit_cox, type = "surv", group_var = "sex")
 plot(fit_cox, type="surv", group_var = "ph.ecog")
 plot(fit_cox, type="density")
 plot(fit_cox, type="baseline")
+
+## ex: same model using brms package
+
+lung2 <- lung
+lung2$status <- lung2$status - 1
+cox_data2 <- na.omit(lung2)
+
+library(brms)
+system.time({
+fit_cox_brms <- brms::brm(time | cens(1 - status) ~ age + sex +
+                          ph.ecog + ph.karno_status + wt.loss,
+             data = cox_data2, family = brmsfamily("cox"),
+             silent = 2, refresh = 0, cores = 2,
+             prior = prior(normal(0,1), class = b))}) # > 1 minute
+
+summary(fit_cox_brms)
+
 
 ######################################################
 ## BB-CCR Example (Melanoma dataset)
@@ -208,8 +225,7 @@ fit_crr <- runBB(
   model = "BB-CRR",
   formula = survival::Surv(time, status) ~ age + sex + thickness + ulcer,
   failcode = 1, # default is 1, here the event of interest
-  prior_fn = prior_ridge,
-  M = 300
+  prior_fn = prior_ridge
 )
 
 fit_crr
@@ -235,8 +251,7 @@ fit_glm <- runBB(
   model = "BB-GLM",
   formula = status ~ time_period + age + sex + ph.ecog + wt.loss,
   family = binomial(),
-  prior_fn = prior_ridge,
-  M = 300
+  prior_fn = prior_ridge
 )
 
 fit_glm
