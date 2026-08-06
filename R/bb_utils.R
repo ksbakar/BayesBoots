@@ -114,11 +114,50 @@ weighted_quantile <- function(
   ord <- order(x)
   x <- x[ord]
   w <- w[ord]
-  w <- w / sum(w)
+  w <- w / sum(w, na.rm=TRUE)
   cw <- cumsum(w)
   sapply(probs, function(p) {
     x[which(cw >= p)[1]]
   })
+}
+
+## Weighted HPD quantile + median
+
+weighted_hpd <- function(
+    x,
+    w,
+    prob = 0.95
+) {
+  stopifnot(length(x) == length(w))
+  ord <- order(x)
+  x <- x[ord]
+  w <- w[ord]
+  w <- w / sum(w, na.rm=TRUE)
+  cw <- cumsum(w)
+  n <- length(x)
+  lower <- numeric(0)
+  upper <- numeric(0)
+  width <- numeric(0)
+  for (i in seq_len(n)) {
+    start_prob <- ifelse(i == 1, 0, cw[i-1])
+    j <- which(cw >= start_prob + prob)[1]
+    if (!is.na(j)) {
+      lower <- c(lower, x[i])
+      upper <- c(upper, x[j])
+      width <- c(width, x[j] - x[i])
+    }
+  }
+  idx <- which.min(width)
+  median <- weighted_quantile(
+    x = x,
+    w = w,
+    probs = 0.5
+  )
+  c(
+    lower = lower[idx],
+    median = median,
+    upper = upper[idx]
+  )
 }
 
 ## Posterior summary
@@ -130,14 +169,19 @@ posterior_summary <- function(
   p <- ncol(beta_mat)
   out <- vector("list", p)
   for(j in seq_len(p)) {
-    qs <- weighted_quantile(
+    qs <- weighted_hpd(
       beta_mat[, j],
       weights,
-      probs = c(0.025, 0.5, 0.975)
+      prob = 0.95
     )
+    #qs <- weighted_quantile(
+    #  beta_mat[, j],
+    #  weights,
+    #  probs = c(0.025, 0.5, 0.975)
+    #)
     out[[j]] <- tibble::tibble(
       parameter = colnames(beta_mat)[j],
-      mean = sum(beta_mat[, j] * weights),
+      mean = sum(beta_mat[, j] * weights, na.rm=TRUE),
       lower = qs[1],
       median = qs[2],
       upper = qs[3]

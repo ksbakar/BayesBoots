@@ -167,9 +167,9 @@ fit_cox <- runBB(
   data = cox_data,
   model = "BB-Cox",
   formula = survival::Surv(time, status) ~ age + sex +
-                      ph.ecog + ph.karno_status + wt.loss,
+                      ph.ecog + wt.loss,
   prior_fn = prior_normal
-)}) # < 1 sec
+)}) # < 5 sec
 
 fit_cox
 summary(fit_cox)
@@ -189,7 +189,7 @@ cox_data2 <- na.omit(lung2)
 library(brms)
 system.time({
 fit_cox_brms <- brms::brm(time | cens(1 - status) ~ age + sex +
-                          ph.ecog + ph.karno_status + wt.loss,
+                          ph.ecog + wt.loss,
              data = cox_data2, family = brmsfamily("cox"),
              silent = 2, refresh = 0, cores = 2,
              prior = prior(normal(0,1), class = b))}) # > 1 minute
