@@ -49,7 +49,8 @@ runBB <- function(
         formula = formula,
         M = M,
         lambda = lambda,
-        omega_fn = prior_fn
+        omega_fn = prior_fn,
+        ...
       )
     },
     "BB-GLM" = function() {

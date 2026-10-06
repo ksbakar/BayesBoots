@@ -223,8 +223,8 @@ table(dat_crr$status_crr)
 fit_crr <- runBB(
   data = dat_crr,
   model = "BB-CRR",
-  formula = survival::Surv(time, status) ~ age + sex + thickness + ulcer,
-  failcode = 1, # default is 1, here the event of interest
+  formula = survival::Surv(time, status_crr) ~ age + sex + thickness + ulcer,
+  failcode = 1, # default is 1, here the event of interest, check ?crr
   prior_fn = prior_ridge
 )
 

@@ -29,7 +29,7 @@ fit_crr_bb <- function(
   )
 }
 
-## Run BB-Cox Gibbs posterior
+## Run BB-CRR Gibbs posterior
 
 run_bb_crr <- function(
     data,
